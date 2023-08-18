@@ -1,0 +1,134 @@
+import 'package:flutter_curl/flutter_curl.dart';
+import 'package:jaehub/functions/gsb.dart';
+
+class Session {
+  Client? client;
+
+  Future<void> startClient() async {
+    if (client != null) return;
+    client = Client(verbose: true, interceptors: []);
+    await client!.init();
+  }
+
+  Future<Response> get(String url, dynamic headers) async {
+    return await client!.send(
+      Request(
+        method: 'GET',
+        url: url,
+        headers: headers ?? {},
+      ),
+    );
+  }
+
+  Future<Response> post(String url, RequestBody? body, dynamic headers) async {
+    return await client!.send(
+      Request(method: 'GET', url: url, headers: headers ?? {}, body: body),
+    );
+  }
+
+  Future<String> getToken() async {
+    var url = 'https://jersacgymequipment.ph/login';
+    var token = (await get(url, null)).text();
+    // print(token);
+    token = gsb(token, '"__RequestVerificationToken" type="hidden" value="', '"');
+    // print(token);
+    return token;
+  }
+
+  login(String user, String password) async {
+    // RequestBody.form({"age": "10", "hello": "world"})
+
+    var url = 'https://jersacgymequipment.ph/login?returnurl=%2F';
+    var token = await getToken();
+    // headers['content-type'] = 'application/x-www-form-urlencoded';
+    // headers['Upgrade-Insecure-Requests'] = '1';
+    // headers['Referer'] = 'https://jersacgymequipment.ph/';
+    // headers['Origin'] = 'https://jersacgymequipment.ph';
+    // print('before post');
+    // print('not normal');
+    // print(content);
+    // print('normal');
+
+    var c = await post(
+        'https://jersacgymequipment.ph/',
+        RequestBody.form({
+          'Email': user,
+          'Password': password,
+          '__RequestVerificationToken': token,
+          'RememberMe': 'false',
+        }),
+        {'content-type': 'application/x-www-form-urlencoded', 'Upgrade-Insecure-Requests': '1'});
+
+    var y = c.text();
+    print(y);
+    if (y.contains('Juan')) {
+      print('contains juan');
+      print(y.substring(y.indexOf('juan')));
+    } else {
+      print('no juan');
+      print('no Juan'.contains('Juan'));
+    }
+  }
+}
+
+// class Session {
+//   Map<String, String> headers = {};
+
+//   Future<String> get(String url) async {
+//     http.Response response = await http.get(Uri.parse(url), headers: headers);
+//     updateCookie(response);
+//     print(headers);
+//     return response.body;
+//     // return json.decode(response.body);
+//   }
+
+//   Future<String> post(String url, dynamic data) async {
+//     http.Response response = (await http.post(Uri.parse(url), body: data, headers: headers, encoding: Encoding.getByName('utf-8')));
+//     print('after http post');
+//     updateCookie(response);
+//     print(headers);
+//     return response.body;
+//     // return json.decode(response.body);
+//   }
+
+//   void updateCookie(http.Response response) {
+//     String rawCookie = response.headers['set-cookie'] ?? '';
+//     String rawCookies = response.headers['cookie'] ?? '';
+//     // print(rawCookie);
+//     print('rawCookies');
+//     print(rawCookies);
+//     // int index = rawCookie.indexOf(';');
+//     // headers['cookie'] = (index == -1) ? rawCookie : rawCookie.substring(0, index);
+//     headers['cookie'] = rawCookie;
+//   }
+
+//   login(String user, String password) async {
+
+//     var url = 'https://jersacgymequipment.ph/login?returnurl=%2F';
+//     var token = await getToken();
+//     headers['content-type'] = 'application/x-www-form-urlencoded';
+//     headers['Upgrade-Insecure-Requests'] = '1';
+//     headers['Referer'] = 'https://jersacgymequipment.ph/';
+//     headers['Origin'] = 'https://jersacgymequipment.ph';
+//     print('before post');
+//     var content = (await post(url, {'Email': user, 'Password': password, '__RequestVerificationToken': token, 'RememberMe': 'false'}));
+//     print('not normal');
+//     print(content);
+//     print('normal');
+//     var c = await get('https://jersacgymequipment.ph/');
+//     if (c.contains('juan')) {
+//       print('contains juan');
+//       print(c.substring(c.indexOf('juan')));
+//     } else {
+//       print('no juan');
+//     }
+//   }
+
+//   Future<String> getToken() async {
+//     var url = 'https://jersacgymequipment.ph/login';
+//     var token = (await get(url));
+//     token = gsb(token, '"__RequestVerificationToken" type="hidden" value="', '"');
+//     // print(token);
+//     return token;
+//   }
+// }
